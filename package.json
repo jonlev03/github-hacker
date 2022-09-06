@@ -1,0 +1,27 @@
+{
+  "name": "github-hacker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonLev03-hub/github-hacker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JonLev03-hub/github-hacker/issues"
+  },
+  "homepage": "https://github.com/JonLev03-hub/github-hacker#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "fs": "^0.0.1-security",
+    "moment": "^2.29.4",
+    "path": "^0.12.7",
+    "simple-git": "^3.14.0"
+  }
+}
