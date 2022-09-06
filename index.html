@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      new Vue({
+        el: "#app",
+        template: `
+        <main><div class = "jumbotron"><h1 >Spoof Your Github today!</h1></div>
+      <form>
+        <h2>Select your prefrences</h2>
+        <div id = top>
+          <label>Date Range: </label>
+          <input placeholder="Start Date" type="date" v-model:value="dates['start']" id = "start" class = "date"/>
+          <input placeholder="End Date" type="date" v-model:value="dates['end']" id = "end" class = "date"/>
+          </div>
+        <table>
+          <thead>
+            <td>Day</td>
+            <td/>
+            <td>Variance</td>
+            <td>Commits</td>
+          </thead>
+          <tr v-for="(value, index) in dayData" :key = "index" :id = "index">
+            <td >{{value.day}}</td>
+            <td><input type="checkbox" v-model:value="value['modify']" class = "checkbox"/></td>
+            <td>
+              <input
+                id=""
+                min="0"
+                max="99"
+                v-model:value="value['variance']"
+                type="number"
+                class = "number"
+              />
+            </td>
+            <td>
+              <input
+                id=""
+                class="slider"
+                min="0"
+                max="10"
+                v-model:value="value['commits']"
+                type="range"
+              />
+              <input type="number" v-model:value="value['commits']" min = "0" class = "number"></input>
+            </td>
+          </tr>
+        </table>
+        <span v-if="error.thrown" id = "error">{{error.value}}</span>
+        <span v-if="success" id = "success">everything should be there! Good luck</span>
+        <button type = "submit" @click="send" :disabled = "pending">send it!</button>
+      </form></main>`,
+        data: {
+          dates: { start: undefined, end: undefined },
+          dayData: [
+            {
+              day: "Sunday",
+              modify: true,
+              commits: 1,
+              variance: 3,
+            },
+            {
+              day: "Monday",
+              modify: true,
+              commits: 5,
+              variance: 3,
+            },
+            {
+              day: "Tuesday",
+              modify: true,
+              commits: 5,
+              variance: 3,
+            },
+            {
+              day: "Wednesday",
+              modify: true,
+              commits: 5,
+              variance: 3,
+            },
+            {
+              day: "Thursday",
+              modify: true,
+              commits: 5,
+              variance: 6,
+            },
+            {
+              day: "Friday",
+              modify: true,
+              commits: 6,
+              variance: 3,
+            },
+            {
+              day: "Saturday",
+              modify: true,
+              commits: 1,
+              variance: 3,
+            },
+          ],
+          error: {
+            thrown: false,
+            value: "",
+          },
+          pending:false,
+          success : false,
+        },
+        methods: {
+          send(e) {
+            this.pending = true
+            e.preventDefault();
+            this.error.thrown = false;
+            if (new Date(this.dates.end) > new Date()) {
+              this.error.thrown = true; this.pending = false;
+              this.error.value =
+                "We can't cheat fate, only history. Make sure the end date is before today";
+              return;
+            }
+            if (!this.dates.start) {
+              this.error.thrown = true; this.pending = false;
+              this.error.value =
+                "Sadly we refuse to add commits from the start of time so please enter a start date.";
+              return;
+            }
+            if (!this.dates.end) {
+              this.error.thrown = true; this.pending = false;
+              this.error.value =
+                "We can't add dates forever, please add an end date";
+              return;
+            }
+            if (this.dates.start > this.dates.end) {
+              this.error.thrown = true; this.pending = false;
+              this.error.value =
+                "You got it backwards dawg, you start things before you end them";
+              return;
+            }
+            let empty = true;
+            this.dayData.forEach((value, index) => {
+              if (value.modify) {
+                empty = false;
+              }
+              if (value.commits < 0) {
+                this.error.thrown = true; this.pending = false;
+                this.error.value =
+                  "We can't remove commits from your crumby github account";
+                return;
+              }
+              if (value.variance < 0) {
+                this.error.thrown = true; this.pending = false;
+                this.error.value =
+                  "you really think negitive variance exists? Make it larger than 0";
+                return;
+              }
+            });
+            if (empty) {
+              this.error.thrown = true; this.pending = false;
+              this.error.value =
+                "You literally aren't chanting anything, add some days ";
+              return;
+            }
+            $.post("http://localhost:8080/api", {
+              dates: this.dates,
+              dayData: this.dayData,
+            },() => {
+              this.pending=false;
+              this.success = true;
+            });
+          },
+        },
+      });
+    </script>
+    <style>
+      body {
+        background-image: url("https://images.unsplash.com/photo-1631264508765-b49496f3f45d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1528&q=80");
+        background-size: 100% 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      * {
+        font-size: large;
+        font-weight: 500;
+      }
+      .jumbotron {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 60px;
+        background-color: rgba(255, 255, 255, 0.25);
+        padding: 10px;
+        /* border-radius:50px; */
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+        border-bottom: 4px solid black;
+        margin-bottom: 30px;
+      }
+      form {
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        flex-direction: column;
+        max-width: fit-content;
+        padding: 50px;
+        margin: 0 auto;
+        justify-content: center;
+        border-radius: 15px;
+        /* border: 3px solid grey; */
+        text-align: center;
+      }
+      table {
+        text-align: right;
+      }
+      form tr {
+        padding: 0 5px;
+        align-items: center;
+        margin: 5px;
+      }
+      form .checkbox {
+        padding: 5px;
+      }
+      form .number {
+        width: 50px;
+        padding: 0px 5px;
+        height: 1.5rem;
+      }
+      form .slider {
+        width: 100px;
+      }
+      form .date {
+        max-width: 125px;
+        font-size: 15px;
+        text-align: center;
+      }
+      form input {
+        border: 1px solid grey;
+        border-radius: 4px;
+        margin: 0 auto;
+      }
+      button {
+        width: 50%;
+        border: 1px solid grey;
+        padding: 5px;
+        border-radius: 4px;
+        margin: 10px auto;
+        margin-bottom: 0;
+      }
+      #error {
+        display: block;
+        width: 350px;
+        color: rgb(255, 0, 0);
+        text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.7);
+        margin: 10px;
+      }#success {
+        display: block;
+        width: 350px;
+        color: green;
+        text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.7);
+        margin: 10px;
+      }
+    </style>
+  </body>
+</html>
